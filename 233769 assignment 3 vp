@@ -1,0 +1,83 @@
+using System;
+using System.Xml;
+using System.Xml.Linq;
+
+class Program
+{
+    static void Main(string[] args)
+    {
+        // Create the XML file
+        CreateXmlFile();
+
+        // Read and display the XML file
+        ReadXmlFile("GPS.xml");
+    }
+
+    static void CreateXmlFile()
+    {
+        XmlWriterSettings settings = new XmlWriterSettings();
+        settings.Indent = true;
+        settings.IndentChars = "\t";
+
+        using (XmlWriter writer = XmlWriter.Create("GPS.xml", settings))
+        {
+            writer.WriteStartDocument();
+            writer.WriteStartElement("GPS_Log");
+
+            writer.WriteStartElement("Position");
+            writer.WriteAttributeString("DateTime", DateTime.Now.ToString("M/d/yyyy h:mm:ss tt"));
+            writer.WriteElementString("x", "65.8973342");
+            writer.WriteElementString("y", "72.3452346");
+
+            writer.WriteStartElement("SatteliteInfo");
+            writer.WriteElementString("Speed", "40");
+            writer.WriteElementString("NoSatt", "7");
+            writer.WriteEndElement(); // End SatteliteInfo
+
+            writer.WriteEndElement(); // End Position
+
+            writer.WriteStartElement("Image");
+            writer.WriteAttributeString("Resolution", "1024x800");
+            writer.WriteElementString("Path", @"\images\1.jpg");
+            writer.WriteEndElement(); // End Image
+
+            writer.WriteEndElement(); // End GPS_Log
+            writer.WriteEndDocument();
+        }
+
+        Console.WriteLine("XML file created successfully.");
+    }
+
+    static void ReadXmlFile(string filePath)
+    {
+        try
+        {
+            XDocument doc = XDocument.Load(filePath);
+            Console.WriteLine("Contents of the XML file:");
+
+            foreach (var position in doc.Descendants("Position"))
+            {
+                Console.WriteLine($"DateTime: {position.Attribute("DateTime")?.Value}");
+                Console.WriteLine($"x: {position.Element("x")?.Value}");
+                Console.WriteLine($"y: {position.Element("y")?.Value}");
+
+                var satelliteInfo = position.Element("SatteliteInfo");
+                if (satelliteInfo != null)
+                {
+                    Console.WriteLine($"Speed: {satelliteInfo.Element("Speed")?.Value}");
+                    Console.WriteLine($"NoSatt: {satelliteInfo.Element("NoSatt")?.Value}");
+                }
+            }
+
+            foreach (var image in doc.Descendants("Image"))
+            {
+                Console.WriteLine($"Resolution: {image.Attribute("Resolution")?.Value}");
+                Console.WriteLine($"Path: {image.Element("Path")?.Value}");
+            }
+        }
+        catch (Exception ex)
+        {
+            Console.WriteLine($"Error reading XML file: {ex.Message}");
+        }
+    }
+}
